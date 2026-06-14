@@ -81,7 +81,9 @@
             <div class="form-container">
                 <div class="form-content">
                     <h2 class="form-title">Send a Message</h2>
-                    <form class="contact-form" id="contactForm">
+                    <form class="contact-form" id="contactForm" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+                        <input type="hidden" name="form-name" value="contact">
+                        <p style="display:none"><label>Don't fill this out: <input name="bot-field"></label></p>
                         <div class="form-group">
                             <input type="text" id="name" name="name" placeholder="Your Name" required>
                             <label for="name"><i class="fas fa-user"></i></label>
@@ -98,7 +100,8 @@
                             <textarea id="message" name="message" placeholder="Your Message" rows="6" required></textarea>
                             <label for="message"><i class="fas fa-comment"></i></label>
                         </div>
-                        <button type="submit" class="submit-btn">Send Message</button>
+                        <button type="submit" class="submit-btn" id="submitBtn">Send Message</button>
+                        <p id="formStatus" style="display:none; margin-top: 1rem; font-weight: 600;"></p>
                     </form>
                 </div>
                 <div class="form-image">
@@ -139,7 +142,37 @@
     <script src="js/main.js"></script>
     <script src="js/animations.js"></script>
     <script src="js/navigation.js"></script>
-    
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('formStatus');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                const res = await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(new FormData(this)).toString()
+                });
+                if (res.ok) {
+                    status.style.display = 'block';
+                    status.style.color = '#4CAF50';
+                    status.textContent = 'Message sent successfully! I\'ll get back to you soon.';
+                    this.reset();
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            } catch (err) {
+                status.style.display = 'block';
+                status.style.color = '#f44336';
+                status.textContent = 'Something went wrong. Please try again or email directly.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+            }
+        });
+    </script>
 
 </body>
 </html>
